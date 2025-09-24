@@ -14,6 +14,19 @@ def _csv_path(filename: str) -> str:
     return os.path.join(os.path.dirname(__file__), filename)
 
 
+def _format_phone_number(phone: str) -> str:
+    """Format phone number from 1234567890 to (123) 456-7890"""
+    # Remove any non-digit characters
+    digits = ''.join(filter(str.isdigit, phone))
+    
+    # Check if it's a 10-digit US phone number
+    if len(digits) == 10:
+        return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+    
+    # Return original if not 10 digits
+    return phone
+
+
 def _read_csv_safe(path: str) -> Tuple[List[str], List[List[str]]]:
     """
     Read a CSV and return (headers, rows) as strings, with NaNs -> "".
@@ -55,6 +68,14 @@ def load_members_from_csv() -> Tuple[List[str], List[List[str]]]:
     """Load members data; fallback to empty if missing."""
     try:
         headers, rows = _read_csv_safe(_csv_path("members.csv"))
+        
+        # Format phone numbers in Contact column if it exists
+        if "Contact" in headers:
+            contact_index = headers.index("Contact")
+            for row in rows:
+                if contact_index < len(row) and row[contact_index]:
+                    row[contact_index] = _format_phone_number(row[contact_index])
+        
         print(f"Loaded {len(rows)} rows with {len(headers)} columns from members.csv")
         print(f"Columns: {headers}")
         return headers, rows
