@@ -116,6 +116,10 @@ class State(rx.State):
     def members_count(self) -> int:
         return len(self.members_rows)
 
+    @rx.var
+    def prayer_request_char_count(self) -> int:
+        return len(self.prayer_request_text)
+
     # ---- Toggles ----
     def toggle_members(self):
         self.show_members = True
@@ -353,9 +357,10 @@ def prayer_requests() -> rx.Component:
     return rx.cond(
         State.is_authenticated,
         rx.container(
-            rx.color_mode.button(position="top-right"),
             rx.vstack(
-                rx.text("Submit your prayer requests here:", size="5"),
+                rx.color_mode.button(),
+                rx.text(height="5px"),
+                rx.text("Share your request here, and it will be sent to our community group.", size="3"),
                 rx.vstack(
                     rx.text_area(
                         placeholder="Please share your prayer request here...",
@@ -365,7 +370,21 @@ def prayer_requests() -> rx.Component:
                         max_width="600px",
                         height="200px",
                         resize="vertical",
+                        max_length=150,
                     ),
+                    rx.text(
+                        f"{State.prayer_request_char_count}/150 characters",
+                        size="2",
+                        color=rx.cond(
+                            State.prayer_request_char_count > 140,
+                            "red",
+                            "gray"
+                        ),
+                        align="right",
+                        width="100%",
+                        max_width="600px",
+                    ),
+                    rx.text(height="10px"),
                     rx.button(
                         "Submit Prayer Request",
                         on_click=State.submit_prayer_request,
@@ -380,7 +399,7 @@ def prayer_requests() -> rx.Component:
                 rx.link(
                     rx.button(
                         "Back to Home",
-                        color_scheme="gray",
+                        color_scheme="green",
                         size="3",
                     ),
                     href="/home",
