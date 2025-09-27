@@ -152,15 +152,20 @@ class State(rx.State):
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(text)
 
-            # Send SMS notification
-            phone_number = "+12157677674"  # Replace with actual phone number
+            # Send SMS notification to all members
             sms_message = f"{text}"
-            
-            try:
-                send_text_message(phone_number, sms_message)
-            except Exception as sms_error:
-                print(f"SMS sending failed: {sms_error}")
-                # Continue execution even if SMS fails
+            for row in self.members_rows:
+                if "Contact" in self.members_headers:
+                    contact_index = self.members_headers.index("Contact")
+                    if contact_index < len(row) and row[contact_index]:
+                        # Ensure phone number has +1 at the front
+                        phone_number = row[contact_index]
+                        if not phone_number.startswith("+1"):
+                            phone_number = "+1" + phone_number
+                        try:
+                            send_text_message(phone_number, sms_message)
+                        except Exception as sms_error:
+                            print(f"Failed to send SMS to {phone_number}: {sms_error}")
 
             # Clear textarea
             self.prayer_request_text = ""
