@@ -6,6 +6,10 @@ import pandas as pd
 import reflex as rx
 from rxconfig import config  # keep if you have rxconfig.py; safe to leave
 
+# Add current directory to Python path
+import sys
+sys.path.append(os.path.dirname(__file__))
+from TextNowAPI import send_text_message
 
 # ---------- CSV loaders ----------
 
@@ -143,6 +147,16 @@ class State(rx.State):
             # Save
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(text)
+
+            # Send SMS notification
+            phone_number = "+12157677674"  # Replace with actual phone number
+            sms_message = f"{text}"
+            
+            try:
+                send_text_message(phone_number, sms_message)
+            except Exception as sms_error:
+                print(f"SMS sending failed: {sms_error}")
+                # Continue execution even if SMS fails
 
             # Clear textarea
             self.prayer_request_text = ""
